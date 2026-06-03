@@ -133,10 +133,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { store, LeadStatus } from '../../store/mockData';
+import { store, LeadStatus, ROLE_NAMES, STATUS_NAMES } from '../../store/mockData';
 
-const roleNames: Record<string, string> = { 'V1': '普通推客', 'V2': '高级合伙人', 'V3': '城市大队长' };
-const statusNames = { 'PENDING': '待跟进', 'MEASURED': '已量房', 'SIGNED': '已签约', 'WATER_ELEC': '水电进场', 'FURNITURE': '软装进场', 'COMPLETED': '已竣工', 'INVALID': '已失效' };
+const roleNames: Record<string, string> = ROLE_NAMES;
+const statusNames: Record<string, string> = STATUS_NAMES;
 
 const currentUser = computed(() => store.currentUser);
 const myLeads = computed(() => {

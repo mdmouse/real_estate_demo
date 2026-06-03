@@ -1,7 +1,7 @@
 <template>
   <view class="container">
     <view class="m-header">
-      <text class="title">大队长数据雷达</text>
+      <text class="title">{{ pageTitle }}</text>
       <text class="subtitle">洞察团队生态，赋能级差分销</text>
     </view>
 
@@ -104,11 +104,12 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { store } from '../../store/mockData';
+import { store, ROLE_NAMES } from '../../store/mockData';
 
 const activeTab = ref(0);
 const currentUser = computed(() => store.currentUser);
-const roleNames: Record<string,string> = { 'V1': '普通推客', 'V2': '高级合伙人', 'V3': '城市大队长' };
+const roleNames: Record<string,string> = ROLE_NAMES;
+const pageTitle = computed(() => (currentUser.value?.role === 'V3' ? '大队长数据雷达' : '我的团队'));
 
 const downlines = computed(() => {
   if (!currentUser.value) return [];

@@ -47,6 +47,10 @@ const submit = () => {
     uni.showToast({ title: '请填写完整信息', icon: 'none' });
     return;
   }
+  if (!/^1\d{10}$/.test(form.clientPhone)) {
+    uni.showToast({ title: '请输入正确的11位手机号', icon: 'none' });
+    return;
+  }
   uni.showLoading({ title: '系统报备中...' });
   setTimeout(() => {
     store.addLead({

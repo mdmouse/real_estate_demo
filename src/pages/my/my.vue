@@ -101,10 +101,10 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { store } from '../../store/mockData';
+import { store, ROLE_NAMES } from '../../store/mockData';
 
 const currentUser = computed(() => store.currentUser);
-const roleNames: Record<string, string> = { 'V1': '普通推客', 'V2': '高级合伙人', 'V3': '城市大队长' };
+const roleNames: Record<string, string> = ROLE_NAMES;
 
 // 模拟全市总业绩分红池
 const bonusPool = computed(() => {

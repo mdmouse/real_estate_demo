@@ -48,7 +48,7 @@ export interface Transaction {
   id: string;
   userId: string;
   amount: number;
-  type: 'MEASURE_BONUS' | 'SIGN_COMM' | 'STAGE_COMM' | 'COMPLETE_COMM' | 'DIFF_COMM' | 'TAX_DEDUCTION' | 'UPSELL_COMM' | 'BONUS_POOL';
+  type: 'MEASURE_BONUS' | 'SIGN_COMM' | 'STAGE_COMM' | 'COMPLETE_COMM' | 'DIFF_COMM' | 'TAX_DEDUCTION' | 'UPSELL_COMM' | 'BONUS_POOL' | 'WITHDRAW';
   sourceLeadId?: string;
   desc: string;
   date: string;
@@ -66,6 +66,13 @@ export interface RadarLog {
 
 export const ROLE_RATES = { 'V1': 0.03, 'V2': 0.04, 'V3': 0.05 };
 export const STAGE_PAYOUT_RATES = { 'SIGNED': 0.3, 'WATER_ELEC': 0.2, 'FURNITURE': 0.2, 'COMPLETED': 0.3 };
+
+// 公共展示名称（各页面共用，避免重复定义）
+export const ROLE_NAMES: Record<UserRole, string> = { 'V1': '普通推客', 'V2': '高级合伙人', 'V3': '城市大队长' };
+export const STATUS_NAMES: Record<LeadStatus, string> = {
+  'PENDING': '待跟进', 'MEASURED': '已量房', 'SIGNED': '已签约',
+  'WATER_ELEC': '水电进场', 'FURNITURE': '软装进场', 'COMPLETED': '已竣工', 'INVALID': '已失效'
+};
 
 export const store = reactive({
   currentUser: null as unknown as User,
@@ -272,11 +279,12 @@ export const store = reactive({
       const tax = amount * 0.06; // 6% 灵活用工个税代扣
       const actual = amount - tax;
       this.currentUser.balance -= amount;
-      
+
       const dateStr = new Date().toLocaleString();
       this.transactions.unshift({
-        id: Date.now() + '_tax', userId: this.currentUser.id, amount: -tax, type: 'TAX_DEDUCTION',
-        desc: '灵活用工云账户 - 依法代扣代缴个税', date: dateStr, status: 'SETTLED'
+        id: Date.now() + '_wd', userId: this.currentUser.id, amount: -amount, type: 'WITHDRAW',
+        desc: `提现 ¥${amount.toLocaleString()}，实际到账 ¥${actual.toLocaleString()}（云账户已依法代扣个税 ¥${tax.toLocaleString()}）`,
+        date: dateStr, status: 'SETTLED'
       });
     }
   }

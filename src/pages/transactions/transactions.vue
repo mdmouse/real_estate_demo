@@ -25,7 +25,7 @@
           </view>
         </view>
         <view class="tx-right">
-          <text class="tx-amount">+{{ item.amount.toLocaleString() }}</text>
+          <text class="tx-amount" :class="{ negative: item.amount < 0 }">{{ item.amount >= 0 ? '+' : '' }}{{ item.amount.toLocaleString() }}</text>
         </view>
       </view>
     </view>
@@ -45,6 +45,9 @@ const myTransactions = computed(() => {
 
 const getIconText = (type: string) => {
   if (type === 'MEASURE_BONUS') return '津';
+  if (type === 'WITHDRAW') return '提';
+  if (type === 'TAX_DEDUCTION') return '税';
+  if (type === 'BONUS_POOL') return '红';
   if (type.includes('COMM')) return '佣';
   return '收';
 };
@@ -52,11 +55,16 @@ const getIconText = (type: string) => {
 const getIconClass = (type: string) => {
   if (type === 'MEASURE_BONUS') return 'icon-bonus';
   if (type === 'DIFF_COMM') return 'icon-diff';
+  if (type === 'WITHDRAW' || type === 'TAX_DEDUCTION') return 'icon-out';
   return 'icon-comm';
 };
 
 const getTypeName = (type: string) => {
-  const map: any = { 'MEASURE_BONUS': '量房津贴', 'SIGN_COMM': '签约首款', 'COMPLETE_COMM': '竣工尾款', 'DIFF_COMM': '级差管理奖' };
+  const map: any = {
+    'MEASURE_BONUS': '量房津贴', 'SIGN_COMM': '签约首款', 'STAGE_COMM': '阶段节点佣金',
+    'COMPLETE_COMM': '竣工尾款', 'DIFF_COMM': '级差管理奖', 'UPSELL_COMM': '供应链返佣',
+    'BONUS_POOL': '分红池', 'TAX_DEDUCTION': '个税代扣', 'WITHDRAW': '提现'
+  };
   return map[type] || '其他';
 };
 </script>
@@ -76,6 +84,7 @@ const getTypeName = (type: string) => {
 .icon-bonus { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); }
 .icon-comm { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
 .icon-diff { background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); }
+.icon-out { background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%); }
 
 .tx-info { display: flex; flex-direction: column; }
 .tx-title { font-size: 15px; font-weight: bold; color: #2c3e50; margin-bottom: 6px; }
@@ -85,11 +94,17 @@ const getTypeName = (type: string) => {
 
 .tx-type-tag.MEASURE_BONUS { background: #fff0f6; color: #eb2f96; }
 .tx-type-tag.SIGN_COMM { background: #e6f7ff; color: #1890ff; }
+.tx-type-tag.STAGE_COMM { background: #e6fffb; color: #13c2c2; }
 .tx-type-tag.COMPLETE_COMM { background: #f6ffed; color: #52c41a; }
 .tx-type-tag.DIFF_COMM { background: #f9f0ff; color: #722ed1; }
+.tx-type-tag.UPSELL_COMM { background: #fffbe6; color: #d48806; }
+.tx-type-tag.BONUS_POOL { background: #fff7e6; color: #fa8c16; }
+.tx-type-tag.TAX_DEDUCTION { background: #f3f4f6; color: #6b7280; }
+.tx-type-tag.WITHDRAW { background: #f3f4f6; color: #6b7280; }
 
 .tx-right { display: flex; align-items: center; }
 .tx-amount { font-size: 18px; font-weight: 800; color: #d35400; }
+.tx-amount.negative { color: #6b7280; }
 .empty-state { text-align: center; padding: 60px 0; display: flex; flex-direction: column; align-items: center;}
 .empty-emoji { font-size: 48px; margin-bottom: 16px;}
 </style>
