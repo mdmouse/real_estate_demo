@@ -1,0 +1,73 @@
+{
+	"pages": [
+		{
+			"path": "pages/login/login",
+			"style": { "navigationBarTitleText": "系统登录", "navigationStyle": "custom" }
+		},
+		{
+			"path": "pages/index/index",
+			"style": { "navigationBarTitleText": "紫钰工作台" }
+		},
+		{
+			"path": "pages/marketing/marketing",
+			"style": { "navigationBarTitleText": "拓客物料" }
+		},
+		{
+			"path": "pages/team/team",
+			"style": { "navigationBarTitleText": "我的团队" }
+		},
+		{
+			"path": "pages/my/my",
+			"style": { "navigationBarTitleText": "我的钱包", "navigationStyle": "custom" }
+		},
+		{
+			"path": "pages/lead/add",
+			"style": { "navigationBarTitleText": "推荐客户" }
+		},
+		{
+			"path": "pages/lead/detail",
+			"style": { "navigationBarTitleText": "客户详情与跟进" }
+		},
+		{
+			"path": "pages/transactions/transactions",
+			"style": { "navigationBarTitleText": "资产流水" }
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "white",
+		"navigationBarTitleText": "紫钰家装推客",
+		"navigationBarBackgroundColor": "#4a148c",
+		"backgroundColor": "#f8f9fc"
+	},
+	"tabBar": {
+		"color": "#9ca3af",
+		"selectedColor": "#7e57c2",
+		"backgroundColor": "#ffffff",
+		"list": [
+			{
+				"pagePath": "pages/index/index",
+				"text": "工作台",
+				"iconPath": "static/tabbar/home.png",
+				"selectedIconPath": "static/tabbar/home_sel.png"
+			},
+			{
+				"pagePath": "pages/marketing/marketing",
+				"text": "营销",
+				"iconPath": "static/tabbar/marketing.png",
+				"selectedIconPath": "static/tabbar/marketing_sel.png"
+			},
+			{
+				"pagePath": "pages/team/team",
+				"text": "团队",
+				"iconPath": "static/tabbar/team.png",
+				"selectedIconPath": "static/tabbar/team_sel.png"
+			},
+			{
+				"pagePath": "pages/my/my",
+				"text": "我的",
+				"iconPath": "static/tabbar/my.png",
+				"selectedIconPath": "static/tabbar/my_sel.png"
+			}
+		]
+	}
+}

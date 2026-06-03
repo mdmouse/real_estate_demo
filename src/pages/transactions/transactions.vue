@@ -1,0 +1,95 @@
+<template>
+  <view class="container">
+    <view class="header-section">
+      <text class="page-title">资金与流水</text>
+      <text class="page-subtitle">每一笔收益都清晰可见</text>
+    </view>
+
+    <view class="list-container">
+      <view class="empty-state" v-if="myTransactions.length === 0">
+        <text class="empty-emoji">💰</text>
+        <text>暂无收益流水</text>
+      </view>
+
+      <view class="tx-card" v-for="item in myTransactions" :key="item.id">
+        <view class="tx-left">
+          <view class="tx-icon" :class="getIconClass(item.type)">
+            <text>{{ getIconText(item.type) }}</text>
+          </view>
+          <view class="tx-info">
+            <text class="tx-title">{{ item.desc }}</text>
+            <view class="tx-meta">
+              <text class="tx-date">{{ item.date }}</text>
+              <text class="tx-type-tag" :class="item.type">{{ getTypeName(item.type) }}</text>
+            </view>
+          </view>
+        </view>
+        <view class="tx-right">
+          <text class="tx-amount">+{{ item.amount.toLocaleString() }}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+import { store } from '../../store/mockData';
+
+const currentUser = computed(() => store.currentUser);
+
+const myTransactions = computed(() => {
+  if (!currentUser.value) return [];
+  return store.transactions.filter(t => t.userId === currentUser.value.id);
+});
+
+const getIconText = (type: string) => {
+  if (type === 'MEASURE_BONUS') return '津';
+  if (type.includes('COMM')) return '佣';
+  return '收';
+};
+
+const getIconClass = (type: string) => {
+  if (type === 'MEASURE_BONUS') return 'icon-bonus';
+  if (type === 'DIFF_COMM') return 'icon-diff';
+  return 'icon-comm';
+};
+
+const getTypeName = (type: string) => {
+  const map: any = { 'MEASURE_BONUS': '量房津贴', 'SIGN_COMM': '签约首款', 'COMPLETE_COMM': '竣工尾款', 'DIFF_COMM': '级差管理奖' };
+  return map[type] || '其他';
+};
+</script>
+
+<style>
+.container { padding-bottom: 20px; background: #f8fbff; min-height: 100vh;}
+.header-section { padding: 30px 20px 20px; }
+.page-title { font-size: 26px; font-weight: 800; color: #2c3e50; display: block; margin-bottom: 6px;}
+.page-subtitle { font-size: 14px; color: #7f8c8d; display: block; }
+
+.list-container { padding: 0 20px; }
+.tx-card { background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; }
+
+.tx-left { display: flex; align-items: center; }
+.tx-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; justify-content: center; align-items: center; font-size: 16px; font-weight: bold; color: white; margin-right: 14px; }
+
+.icon-bonus { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); }
+.icon-comm { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
+.icon-diff { background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); }
+
+.tx-info { display: flex; flex-direction: column; }
+.tx-title { font-size: 15px; font-weight: bold; color: #2c3e50; margin-bottom: 6px; }
+.tx-meta { display: flex; align-items: center; gap: 8px;}
+.tx-date { font-size: 11px; color: #95a5a6; }
+.tx-type-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600;}
+
+.tx-type-tag.MEASURE_BONUS { background: #fff0f6; color: #eb2f96; }
+.tx-type-tag.SIGN_COMM { background: #e6f7ff; color: #1890ff; }
+.tx-type-tag.COMPLETE_COMM { background: #f6ffed; color: #52c41a; }
+.tx-type-tag.DIFF_COMM { background: #f9f0ff; color: #722ed1; }
+
+.tx-right { display: flex; align-items: center; }
+.tx-amount { font-size: 18px; font-weight: 800; color: #d35400; }
+.empty-state { text-align: center; padding: 60px 0; display: flex; flex-direction: column; align-items: center;}
+.empty-emoji { font-size: 48px; margin-bottom: 16px;}
+</style>
