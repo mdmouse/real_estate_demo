@@ -19,21 +19,32 @@
           <button class="btn-gold withdraw-btn" @click="openWithdraw">合规提现</button>
         </view>
         <view class="w-bot">
-          <text class="pending-lbl">在途预估佣金(元)：</text>
-          <text class="pending-val">¥{{ currentUser?.pendingBalance.toLocaleString() }}</text>
+          <text class="pending-lbl">本月量房：</text>
+          <text class="pending-val">{{ currentUser?.monthlyMeasureCount || 0 }} 次</text>
+          <text class="pending-hint">（满{{ REWARDS.PERF_MEASURE_THRESHOLD }}次得¥{{ REWARDS.PERF_BONUS }}业绩奖）</text>
         </view>
       </view>
     </view>
 
-    <!-- 大队长专属分红池 -->
-    <view class="bonus-pool-card" v-if="currentUser?.role === 'V3'">
-      <view class="bp-header">
-        <text class="bp-title">🏆 城市大队长年终分红池</text>
-        <text class="bp-tag">预计分红</text>
+    <!-- 高级经纪人渠道收益 -->
+    <view class="senior-card" v-if="currentUser?.role === 'V3'">
+      <view class="sc-header">
+        <text class="sc-title">👑 高级经纪人渠道收益</text>
+        <text class="sc-tag">本月</text>
       </view>
-      <view class="bp-content">
-        <text class="bp-amount">¥{{ bonusPool.toLocaleString() }}</text>
-        <text class="bp-desc">全城年度总业绩金额的 1% 将作为年终奖分发</text>
+      <view class="sc-row">
+        <text class="sc-lbl">渠道返佣（直属签约 3‰）</text>
+        <text class="sc-val">¥{{ (currentUser.channelOverrideMonth || 0).toLocaleString() }}<text class="sc-cap"> / 3万封顶</text></text>
+      </view>
+      <view class="sc-bar"><view class="sc-bar-fill" :style="{ width: channelPct + '%' }"></view></view>
+      <view class="sc-divider"></view>
+      <view class="sc-row">
+        <text class="sc-lbl">已开发经纪人</text>
+        <text class="sc-val">{{ developedAgents }} 人</text>
+      </view>
+      <view class="sc-row" style="margin-top: 10px;">
+        <text class="sc-lbl">管理分润 / 里程碑奖</text>
+        <text class="sc-val">¥{{ seniorTeamIncome.toLocaleString() }}</text>
       </view>
     </view>
 
@@ -101,15 +112,19 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { store, ROLE_NAMES } from '../../store/mockData';
+import { store, ROLE_NAMES, REWARDS } from '../../store/mockData';
 
 const currentUser = computed(() => store.currentUser);
 const roleNames: Record<string, string> = ROLE_NAMES;
 
-// 模拟全市总业绩分红池
-const bonusPool = computed(() => {
-  const totalCitySales = store.leads.length * 150000; 
-  return totalCitySales * 0.01; 
+// 高级经纪人渠道收益
+const developedAgents = computed(() => store.developedAgentsCount(currentUser.value?.id));
+const channelPct = computed(() => Math.min(100, Math.round((currentUser.value?.channelOverrideMonth || 0) / REWARDS.CHANNEL_CAP * 100)));
+const seniorTeamIncome = computed(() => {
+  const types = ['MGMT_SHARE', 'CHANNEL_OVERRIDE', 'CHANNEL_MGMT_AWARD', 'ASSIST_AWARD'];
+  return store.transactions
+    .filter(t => t.userId === currentUser.value?.id && types.includes(t.type))
+    .reduce((s, t) => s + t.amount, 0);
 });
 
 const showWithdraw = ref(false);
@@ -157,18 +172,23 @@ const handleLogout = () => { uni.reLaunch({ url: '/pages/login/login' }); };
 .w-val { color: #d4af37; font-size: 32px; font-weight: bold; font-family: 'DIN Alternate', sans-serif;}
 .withdraw-btn { margin: 0; padding: 0 20px; height: 36px; line-height: 36px; font-size: 14px; border-radius: 18px; background: linear-gradient(90deg, #d4af37, #fde047); color: #4a148c; font-weight: bold; border: none;}
 
-.w-bot { display: flex; align-items: center; }
-.pending-lbl { color: #6b7280; font-size: 12px; }
-.pending-val { color: #e5e7eb; font-size: 16px; font-weight: 600; font-family: 'DIN Alternate', sans-serif;}
+.w-bot { display: flex; align-items: center; flex-wrap: wrap; }
+.pending-lbl { color: #9ca3af; font-size: 12px; }
+.pending-val { color: #d4af37; font-size: 16px; font-weight: 600; font-family: 'DIN Alternate', sans-serif; margin-right: 6px;}
+.pending-hint { color: #6b7280; font-size: 11px; }
 
-/* 城市大队长分红池 */
-.bonus-pool-card { margin: 0 20px 20px; background: linear-gradient(135deg, #fffbeb, #fef3c7); border-radius: 16px; padding: 20px; border: 1px solid #fde68a; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.05); }
-.bp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.bp-title { font-size: 16px; font-weight: bold; color: #92400e; }
-.bp-tag { font-size: 10px; background: #f59e0b; color: white; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
-.bp-content { display: flex; flex-direction: column; }
-.bp-amount { font-size: 32px; font-weight: 900; color: #b45309; font-family: 'DIN Alternate', sans-serif; margin-bottom: 8px; }
-.bp-desc { font-size: 12px; color: #b45309; opacity: 0.8; }
+/* 高级经纪人渠道收益卡 */
+.senior-card { margin: 0 20px 20px; background: linear-gradient(135deg, #fffbeb, #fef3c7); border-radius: 16px; padding: 20px; border: 1px solid #fde68a; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.05); }
+.sc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.sc-title { font-size: 16px; font-weight: bold; color: #92400e; }
+.sc-tag { font-size: 10px; background: #f59e0b; color: white; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
+.sc-row { display: flex; justify-content: space-between; align-items: center; }
+.sc-lbl { font-size: 13px; color: #b45309; }
+.sc-val { font-size: 16px; font-weight: 800; color: #b45309; font-family: 'DIN Alternate', sans-serif; }
+.sc-cap { font-size: 11px; font-weight: normal; color: #d97706; }
+.sc-bar { height: 8px; background: #fde68a; border-radius: 4px; margin-top: 8px; overflow: hidden; }
+.sc-bar-fill { height: 100%; background: linear-gradient(90deg, #f59e0b, #d97706); border-radius: 4px; transition: width 0.4s; }
+.sc-divider { height: 1px; background: #fde68a; margin: 16px 0; }
 
 .menu-list { padding: 0 20px 20px; }
 .card { background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }

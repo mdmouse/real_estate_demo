@@ -44,26 +44,27 @@ const myTransactions = computed(() => {
 });
 
 const getIconText = (type: string) => {
-  if (type === 'MEASURE_BONUS') return '津';
-  if (type === 'WITHDRAW') return '提';
-  if (type === 'TAX_DEDUCTION') return '税';
-  if (type === 'BONUS_POOL') return '红';
-  if (type.includes('COMM')) return '佣';
-  return '收';
+  const map: any = {
+    LEAD_BONUS: '奖', SIGN_BONUS: '奖', PERF_BONUS: '绩', NODE_COMM: '佣', UPSELL_COMM: '增',
+    MGMT_SHARE: '管', CHANNEL_OVERRIDE: '渠', CHANNEL_MGMT_AWARD: '渠', ASSIST_AWARD: '助',
+    WITHDRAW: '提', TAX_DEDUCTION: '税'
+  };
+  return map[type] || '收';
 };
 
 const getIconClass = (type: string) => {
-  if (type === 'MEASURE_BONUS') return 'icon-bonus';
-  if (type === 'DIFF_COMM') return 'icon-diff';
-  if (type === 'WITHDRAW' || type === 'TAX_DEDUCTION') return 'icon-out';
+  if (['LEAD_BONUS', 'SIGN_BONUS', 'PERF_BONUS'].includes(type)) return 'icon-bonus';
+  if (['MGMT_SHARE', 'CHANNEL_OVERRIDE', 'CHANNEL_MGMT_AWARD', 'ASSIST_AWARD'].includes(type)) return 'icon-diff';
+  if (['WITHDRAW', 'TAX_DEDUCTION'].includes(type)) return 'icon-out';
   return 'icon-comm';
 };
 
 const getTypeName = (type: string) => {
   const map: any = {
-    'MEASURE_BONUS': '量房津贴', 'SIGN_COMM': '签约首款', 'STAGE_COMM': '阶段节点佣金',
-    'COMPLETE_COMM': '竣工尾款', 'DIFF_COMM': '级差管理奖', 'UPSELL_COMM': '供应链返佣',
-    'BONUS_POOL': '分红池', 'TAX_DEDUCTION': '个税代扣', 'WITHDRAW': '提现'
+    'LEAD_BONUS': '带单奖励', 'SIGN_BONUS': '签单奖励', 'NODE_COMM': '节点返佣',
+    'PERF_BONUS': '业绩奖金', 'MGMT_SHARE': '管理分润', 'CHANNEL_OVERRIDE': '渠道返佣',
+    'CHANNEL_MGMT_AWARD': '渠道管理奖', 'ASSIST_AWARD': '助力奖', 'UPSELL_COMM': '供应链返佣',
+    'TAX_DEDUCTION': '个税代扣', 'WITHDRAW': '提现'
   };
   return map[type] || '其他';
 };
@@ -92,13 +93,15 @@ const getTypeName = (type: string) => {
 .tx-date { font-size: 11px; color: #95a5a6; }
 .tx-type-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600;}
 
-.tx-type-tag.MEASURE_BONUS { background: #fff0f6; color: #eb2f96; }
-.tx-type-tag.SIGN_COMM { background: #e6f7ff; color: #1890ff; }
-.tx-type-tag.STAGE_COMM { background: #e6fffb; color: #13c2c2; }
-.tx-type-tag.COMPLETE_COMM { background: #f6ffed; color: #52c41a; }
-.tx-type-tag.DIFF_COMM { background: #f9f0ff; color: #722ed1; }
-.tx-type-tag.UPSELL_COMM { background: #fffbe6; color: #d48806; }
-.tx-type-tag.BONUS_POOL { background: #fff7e6; color: #fa8c16; }
+.tx-type-tag.LEAD_BONUS { background: #fff0f6; color: #eb2f96; }
+.tx-type-tag.SIGN_BONUS { background: #fff0f6; color: #eb2f96; }
+.tx-type-tag.PERF_BONUS { background: #fff7e6; color: #fa8c16; }
+.tx-type-tag.NODE_COMM { background: #e6f7ff; color: #1890ff; }
+.tx-type-tag.UPSELL_COMM { background: #e6fffb; color: #13c2c2; }
+.tx-type-tag.MGMT_SHARE { background: #f9f0ff; color: #722ed1; }
+.tx-type-tag.CHANNEL_OVERRIDE { background: #f9f0ff; color: #722ed1; }
+.tx-type-tag.CHANNEL_MGMT_AWARD { background: #fffbe6; color: #d48806; }
+.tx-type-tag.ASSIST_AWARD { background: #fffbe6; color: #d48806; }
 .tx-type-tag.TAX_DEDUCTION { background: #f3f4f6; color: #6b7280; }
 .tx-type-tag.WITHDRAW { background: #f3f4f6; color: #6b7280; }
 

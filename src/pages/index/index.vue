@@ -53,9 +53,27 @@
           </view>
           <view class="stat-divider"></view>
           <view class="stat-box">
-            <text class="s-val">{{ currentUser?.balance + currentUser?.pendingBalance || 0 }}</text>
+            <text class="s-val">{{ (currentUser?.balance || 0).toLocaleString() }}</text>
             <text class="s-lbl">累计收益(元)</text>
           </view>
+        </view>
+      </view>
+
+      <!-- 成长进度（注册推荐官 / 经纪人） -->
+      <view class="growth-card" v-if="showGrowth">
+        <view class="g-block">
+          <view class="g-head">
+            <text class="g-title">🚀 {{ promoLabel }}</text>
+            <text class="g-count">{{ promoCur }}/{{ promoTarget }}</text>
+          </view>
+          <view class="g-bar"><view class="g-bar-fill" :style="{ width: promoPct + '%' }"></view></view>
+        </view>
+        <view class="g-block">
+          <view class="g-head">
+            <text class="g-title">📏 本月量房业绩奖（满{{ REWARDS.PERF_MEASURE_THRESHOLD }}次得¥{{ REWARDS.PERF_BONUS }}）</text>
+            <text class="g-count">{{ measureCount }}/{{ REWARDS.PERF_MEASURE_THRESHOLD }}</text>
+          </view>
+          <view class="g-bar"><view class="g-bar-fill gold" :style="{ width: measurePct + '%' }"></view></view>
         </view>
       </view>
 
@@ -133,7 +151,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { store, LeadStatus, ROLE_NAMES, STATUS_NAMES } from '../../store/mockData';
+import { onShow } from '@dcloudio/uni-app';
+import { store, LeadStatus, ROLE_NAMES, STATUS_NAMES, REWARDS } from '../../store/mockData';
 
 const roleNames: Record<string, string> = ROLE_NAMES;
 const statusNames: Record<string, string> = STATUS_NAMES;
@@ -144,8 +163,27 @@ const myLeads = computed(() => {
   return store.leads.filter(l => l.referrerId === currentUser.value.id);
 });
 const teamStats = computed(() => {
-  if (!currentUser.value) return { teamSize: 0, teamLeadsCount: 0, teamDiffCommTotal: 0 };
+  if (!currentUser.value) return { teamSize: 0, teamLeadsCount: 0, teamMgmtTotal: 0 };
   return store.getTeamStats(currentUser.value.id);
+});
+
+// 成长进度（注册推荐官 / 经纪人）
+const showGrowth = computed(() => ['V1', 'V2'].includes(currentUser.value?.role));
+const isReferrer = computed(() => currentUser.value?.role === 'V1');
+const promoTarget = 3;
+const promoLabel = computed(() => (isReferrer.value ? '上传有效客户 · 晋升经纪人' : '开发经纪人 · 晋升高级经纪人'));
+const promoCur = computed(() => {
+  if (!currentUser.value) return 0;
+  return isReferrer.value ? store.validCustomerCount(currentUser.value.id) : store.developedAgentsCount(currentUser.value.id);
+});
+const promoPct = computed(() => Math.min(100, Math.round(promoCur.value / promoTarget * 100)));
+const measureCount = computed(() => currentUser.value?.monthlyMeasureCount || 0);
+const measurePct = computed(() => Math.min(100, Math.round(measureCount.value / REWARDS.PERF_MEASURE_THRESHOLD * 100)));
+
+// 晋升/里程碑提示
+onShow(() => {
+  const n = store.takeNotice();
+  if (n) uni.showToast({ title: n, icon: 'none', duration: 2800 });
 });
 
 const getStepLevel = (status: LeadStatus) => {
@@ -200,6 +238,17 @@ const goDetail = (id: string) => { uni.navigateTo({ url: `/pages/lead/detail?id=
 .s-val { font-size: 28px; font-weight: 900; color: #4a148c; margin-bottom: 4px; font-family: 'DIN Alternate', sans-serif;}
 .s-lbl { font-size: 12px; color: #6b7280; }
 .stat-divider { width: 1px; height: 30px; background: #e5e7eb; }
+
+/* 成长进度卡 */
+.growth-card { background: #ffffff; border-radius: 20px; padding: 20px; margin-bottom: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.06); }
+.g-block { margin-bottom: 16px; }
+.g-block:last-child { margin-bottom: 0; }
+.g-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.g-title { font-size: 13px; font-weight: 600; color: #374151; }
+.g-count { font-size: 13px; font-weight: 800; color: #4a148c; font-family: 'DIN Alternate', sans-serif; }
+.g-bar { height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden; }
+.g-bar-fill { height: 100%; background: linear-gradient(90deg, #7e57c2, #4a148c); border-radius: 4px; transition: width 0.4s; }
+.g-bar-fill.gold { background: linear-gradient(90deg, #f59e0b, #d4af37); }
 
 /* Section Header */
 .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 0 4px; }

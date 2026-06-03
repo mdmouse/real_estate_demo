@@ -21,10 +21,10 @@
           <view class="r-icon-box v1-theme">👤</view>
           <view class="r-info">
             <view class="r-head">
-              <text class="r-name">推客小王</text>
-              <text class="r-badge v1-badge">普通推客 V1</text>
+              <text class="r-name">小王</text>
+              <text class="r-badge v1-badge">注册推荐官 V1</text>
             </view>
-            <text class="r-desc">推荐客户，稳赚直客佣金</text>
+            <text class="r-desc">带单赚奖励：量房200 + 签单200 + 节点返佣3%</text>
           </view>
           <view class="r-arrow">→</view>
         </view>
@@ -33,10 +33,10 @@
           <view class="r-icon-box v2-theme">👔</view>
           <view class="r-info">
             <view class="r-head">
-              <text class="r-name">张主管</text>
-              <text class="r-badge v2-badge">高级合伙人 V2</text>
+              <text class="r-name">张经纪</text>
+              <text class="r-badge v2-badge">经纪人 V2</text>
             </view>
-            <text class="r-desc">享直客佣金及团队裂变分润</text>
+            <text class="r-desc">带单收益 + 开发渠道，冲刺高级经纪人</text>
           </view>
           <view class="r-arrow">→</view>
         </view>
@@ -45,10 +45,10 @@
           <view class="r-icon-box v3-theme">👑</view>
           <view class="r-info">
             <view class="r-head">
-              <text class="r-name">李大队</text>
-              <text class="r-badge v3-badge">城市大队长 V3</text>
+              <text class="r-name">李队长</text>
+              <text class="r-badge v3-badge">高级经纪人 V3</text>
             </view>
-            <text class="r-desc">统管全城推客，坐拥顶级级差</text>
+            <text class="r-desc">管理分润30%/20% + 渠道返佣3‰ + 里程碑奖</text>
           </view>
           <view class="r-arrow">→</view>
         </view>

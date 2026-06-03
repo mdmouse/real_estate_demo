@@ -11,10 +11,22 @@
     </view>
 
     <view class="tree-container" v-show="activeTab === 0">
+      <!-- 渠道开发进度（经纪人/高级经纪人） -->
+      <view class="dev-card card" v-if="canRecruit">
+        <view class="dev-top">
+          <text class="dev-title">渠道开发进度</text>
+          <text class="dev-count">{{ developedAgents }}/3 名经纪人</text>
+        </view>
+        <view class="dev-bar"><view class="dev-bar-fill" :style="{ width: devPct + '%' }"></view></view>
+        <text class="dev-hint" v-if="currentUser?.role === 'V2'">开发满 3 名经纪人即晋升「高级经纪人」，获渠道管理奖 ¥2000（上级得助力奖 ¥1000）</text>
+        <text class="dev-hint" v-else>您已是高级经纪人，直属签约可享 3‰ 渠道返佣（3万/月封顶）</text>
+        <button class="btn-primary dev-btn" @click="recruitAgent">+ 模拟开发一名经纪人</button>
+      </view>
+
       <view class="empty-state" v-if="downlines.length === 0">
         <text class="empty-emoji">🌱</text>
         <text class="empty-text">您的团队正在萌芽中...</text>
-        <button class="btn-primary invite-btn" @click="openPoster">邀请推客加入</button>
+        <button class="btn-primary invite-btn" @click="openPoster">邀请伙伴加入</button>
       </view>
 
       <view class="t-node card" v-for="(item, index) in downlines" :key="index">
@@ -109,7 +121,17 @@ import { store, ROLE_NAMES } from '../../store/mockData';
 const activeTab = ref(0);
 const currentUser = computed(() => store.currentUser);
 const roleNames: Record<string,string> = ROLE_NAMES;
-const pageTitle = computed(() => (currentUser.value?.role === 'V3' ? '大队长数据雷达' : '我的团队'));
+const pageTitle = computed(() => (currentUser.value?.role === 'V3' ? '高级经纪人数据雷达' : '我的团队'));
+
+const developedAgents = computed(() => (currentUser.value ? store.developedAgentsCount(currentUser.value.id) : 0));
+const canRecruit = computed(() => ['V2', 'V3'].includes(currentUser.value?.role));
+const devPct = computed(() => Math.min(100, Math.round(developedAgents.value / 3 * 100)));
+const recruitAgent = () => {
+  if (!currentUser.value) return;
+  store.recruit(currentUser.value.id, 'V2');
+  const notice = store.takeNotice();
+  uni.showToast({ title: notice || '已模拟开发一名经纪人，渠道裂变 +1', icon: 'none', duration: 2800 });
+};
 
 const downlines = computed(() => {
   if (!currentUser.value) return [];
@@ -141,6 +163,16 @@ const simulateCare = () => {
 
 .tree-container, .leaderboard-container { padding: 0 20px; }
 .card { background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+
+/* 渠道开发进度卡 */
+.dev-card { padding: 20px; margin-bottom: 16px; }
+.dev-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.dev-title { font-size: 15px; font-weight: 800; color: #1f2937; }
+.dev-count { font-size: 13px; font-weight: bold; color: #4a148c; }
+.dev-bar { height: 8px; background: #ede9fe; border-radius: 4px; overflow: hidden; }
+.dev-bar-fill { height: 100%; background: linear-gradient(90deg, #7e57c2, #4a148c); border-radius: 4px; transition: width 0.4s; }
+.dev-hint { font-size: 11px; color: #9ca3af; line-height: 1.5; display: block; margin: 12px 0 16px; }
+.dev-btn { height: 44px; line-height: 44px; border-radius: 22px; font-size: 14px; font-weight: bold; }
 
 /* 网络拓扑 */
 .t-node { position: relative; padding: 16px; margin-bottom: 16px; animation: fadeIn 0.3s ease-in-out;}

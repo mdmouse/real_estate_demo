@@ -137,7 +137,8 @@ const advance = () => {
     showAmount.value = true;
   } else {
     store.updateLeadStatus(lead.value.id, nextStep.value.to);
-    uni.showToast({ title: '业务已推进', icon: 'success' });
+    const notice = store.takeNotice();
+    uni.showToast({ title: notice || '业务已推进', icon: notice ? 'none' : 'success', duration: notice ? 2800 : 1500 });
   }
 };
 const confirmAmount = () => {
@@ -147,7 +148,8 @@ const confirmAmount = () => {
   }
   store.updateLeadStatus(lead.value.id, 'SIGNED', amountInput.value);
   showAmount.value = false;
-  uni.showToast({ title: '签约成功，已触发分润', icon: 'success' });
+  const notice = store.takeNotice();
+  uni.showToast({ title: notice || '签约成功，已触发分润', icon: notice ? 'none' : 'success', duration: notice ? 2800 : 1500 });
 };
 
 // 供应链增项弹窗
