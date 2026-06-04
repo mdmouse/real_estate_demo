@@ -111,10 +111,6 @@
               <text class="tc-lbl">提现手续费 (8% + 3元/笔)</text>
               <text class="tc-val">- ¥{{ feeAmount.toFixed(2) }}</text>
             </view>
-            <view class="tc-row tax-row">
-              <text class="tc-lbl">个税代扣代缴 (6%)</text>
-              <text class="tc-val">- ¥{{ taxAmount.toFixed(2) }}</text>
-            </view>
             <view class="tc-divider"></view>
             <view class="tc-row final-row">
               <text class="tc-lbl">实际到账金额</text>
@@ -142,10 +138,9 @@ const roleNames: Record<string, string> = ROLE_NAMES;
 const showWithdraw = ref(false);
 const withdrawAmount = ref<number | ''>('');
 
-// 费用明细：手续费 8%+3元/笔，个税 6%，二者叠加
+// 费用明细：仅收取手续费 8%+3元/笔（不再叠加个税）
 const feeAmount = computed(() => typeof withdrawAmount.value === 'number' ? withdrawAmount.value * 0.08 + 3 : 0);
-const taxAmount = computed(() => typeof withdrawAmount.value === 'number' ? withdrawAmount.value * 0.06 : 0);
-const actualAmount = computed(() => typeof withdrawAmount.value === 'number' ? withdrawAmount.value - feeAmount.value - taxAmount.value : 0);
+const actualAmount = computed(() => typeof withdrawAmount.value === 'number' ? withdrawAmount.value - feeAmount.value : 0);
 
 const canWithdraw = computed(() => {
   const v = withdrawAmount.value;

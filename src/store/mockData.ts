@@ -403,7 +403,7 @@ export const store = reactive({
     }
   },
 
-  // 合规提现：手续费 8%+3元/笔 与 个税 6% 叠加；单笔满 100 整数，单日 ≤3 笔且 ≤1 万
+  // 合规提现：仅收手续费 8%+3元/笔（不叠加个税）；单笔满 100 整数，单日 ≤3 笔且 ≤1 万
   withdraw(amount: number): { ok: boolean; msg: string } {
     const user = this.currentUser;
     if (!Number.isInteger(amount) || amount < 100) {
@@ -426,14 +426,13 @@ export const store = reactive({
       const left = 10000 - user.withdrawAmountToday;
       return { ok: false, msg: `超出当日额度（每日最高 1 万元，今日剩余可提 ¥${left.toLocaleString()}）` };
     }
-    const fee = amount * 0.08 + 3;       // 手续费 8% + 3 元/笔
-    const tax = amount * 0.06;           // 个税代扣代缴 6%
-    const actual = amount - fee - tax;   // 实际到账
+    const fee = amount * 0.08 + 3;       // 手续费 8% + 3 元/笔（不再叠加个税）
+    const actual = amount - fee;         // 实际到账
     user.balance -= amount;
     user.withdrawCountToday += 1;
     user.withdrawAmountToday += amount;
     this.pushTx(user.id, -amount, 'WITHDRAW',
-      `提现 ¥${amount.toLocaleString()}，实际到账 ¥${actual.toFixed(2)}（手续费 ¥${fee.toFixed(2)} + 个税 ¥${tax.toFixed(2)}，预计 24h 内到账绑定结算卡）`);
+      `提现 ¥${amount.toLocaleString()}，实际到账 ¥${actual.toFixed(2)}（手续费 ¥${fee.toFixed(2)}，预计 24h 内到账绑定结算卡）`);
     return { ok: true, msg: `提现申请已提交，实际到账 ¥${actual.toFixed(2)}，预计 24 小时内到账` };
   },
 
