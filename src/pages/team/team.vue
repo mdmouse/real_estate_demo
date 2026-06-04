@@ -18,8 +18,8 @@
           <text class="dev-count">{{ developedAgents }}/3 名经纪人</text>
         </view>
         <view class="dev-bar"><view class="dev-bar-fill" :style="{ width: devPct + '%' }"></view></view>
-        <text class="dev-hint" v-if="currentUser?.role === 'V2'">开发满 3 名经纪人即晋升「高级经纪人」，获渠道管理奖 ¥2000（上级得助力奖 ¥1000）</text>
-        <text class="dev-hint" v-else>您已是高级经纪人，直属签约可享 3‰ 渠道返佣（3万/月封顶）</text>
+        <text class="dev-hint" v-if="currentUser?.role === 'V2'">开发满 3 名经纪人即晋升「高级经纪人」，解锁更多渠道权益</text>
+        <text class="dev-hint" v-else>您已是高级经纪人，可享受直属签约渠道权益</text>
         <button class="btn-primary dev-btn" @click="recruitAgent">+ 模拟开发一名经纪人</button>
       </view>
 
@@ -39,12 +39,12 @@
             <text class="t-name">{{ item.user.name }}</text>
             <view class="t-tags">
               <text class="t-role" :class="item.user.role">{{ roleNames[item.user.role] }}</text>
-              <text class="t-dist">L{{ item.distance }} 级下线</text>
+              <text class="t-dist">L{{ item.distance }} 级</text>
             </view>
           </view>
           <view class="t-perf">
-            <text class="p-lbl">贡献佣金</text>
-            <text class="p-val">¥{{ item.contributedComm.toLocaleString() }}</text>
+            <text class="p-lbl">直客线索总数</text>
+            <text class="p-val">{{ item.leadsCount }} 条</text>
           </view>
         </view>
 
@@ -60,7 +60,7 @@
       
       <!-- 邀请按钮 (仅对有下线但还需要邀请的人显示，为了演示我们放在底部) -->
       <view class="add-more-box" v-if="downlines.length > 0">
-        <button class="btn-primary invite-btn-outline" @click="openPoster">继续招募裂变</button>
+        <button class="btn-primary invite-btn-outline" @click="openPoster">继续推广招募</button>
       </view>
     </view>
 
@@ -130,12 +130,13 @@ const recruitAgent = () => {
   if (!currentUser.value) return;
   store.recruit(currentUser.value.id, 'V2');
   const notice = store.takeNotice();
-  uni.showToast({ title: notice || '已模拟开发一名经纪人，渠道裂变 +1', icon: 'none', duration: 2800 });
+  uni.showToast({ title: notice || '已模拟开发一名经纪人，推广部 +1', icon: 'none', duration: 2800 });
 };
 
 const downlines = computed(() => {
   if (!currentUser.value) return [];
-  return store.getDownlines(currentUser.value.id);
+  // 仅显示直接推广的下级（间接开发不展示）
+  return store.getDirectDownlines(currentUser.value.id);
 });
 
 const leaderboards = computed(() => {

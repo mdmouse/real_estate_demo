@@ -31,6 +31,10 @@
 		{
 			"path": "pages/transactions/transactions",
 			"style": { "navigationBarTitleText": "资产流水" }
+		},
+		{
+			"path": "pages/senior-income/senior-income",
+			"style": { "navigationBarTitleText": "渠道收益" }
 		}
 	],
 	"globalStyle": {

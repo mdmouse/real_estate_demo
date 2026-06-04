@@ -42,7 +42,7 @@
           <view class="stat-divider"></view>
           <view class="stat-box">
             <text class="s-val">{{ teamStats.teamSize }}</text>
-            <text class="s-lbl">团队裂变(人)</text>
+            <text class="s-lbl">推广部(人)</text>
           </view>
         </view>
 

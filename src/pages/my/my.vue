@@ -1,71 +1,89 @@
 <template>
   <view class="container">
-    <view class="header-section">
-      <view class="bg"></view>
-      <view class="content">
-        <view class="avatar">{{ currentUser?.avatar || '👤' }}</view>
-        <view class="info">
-          <text class="name">{{ currentUser?.name }}</text>
-          <text class="uid">身份: {{ roleNames[currentUser?.role] }} | 编码: No.88{{ currentUser?.id }}</text>
+    <!-- 顶部资料区 -->
+    <view class="profile-bar">
+      <view class="pb-avatar">{{ currentUser?.avatar || '👤' }}</view>
+      <view class="pb-info">
+        <text class="pb-name">{{ currentUser?.name }}</text>
+        <view class="pb-meta">
+          <text class="pb-role">{{ roleNames[currentUser?.role] }}</text>
+          <text class="pb-id">No.88{{ currentUser?.id }}</text>
         </view>
       </view>
-      
-      <view class="wallet-card">
-        <view class="w-top">
-          <view class="w-item">
-            <text class="w-lbl">可提现余额 (元)</text>
-            <text class="w-val">¥{{ currentUser?.balance.toLocaleString() }}</text>
-          </view>
-          <button class="btn-gold withdraw-btn" @click="openWithdraw">合规提现</button>
-        </view>
-        <view class="w-bot">
-          <text class="pending-lbl">本月量房：</text>
-          <text class="pending-val">{{ currentUser?.monthlyMeasureCount || 0 }} 次</text>
-          <text class="pending-hint">（满{{ REWARDS.PERF_MEASURE_THRESHOLD }}次得¥{{ REWARDS.PERF_BONUS }}业绩奖）</text>
-        </view>
+      <text class="pb-qr">▦</text>
+    </view>
+
+    <!-- 余额条 -->
+    <view class="balance-bar">
+      <view class="bb-left">
+        <text class="bb-lbl">可提现余额 (元)</text>
+        <text class="bb-val">¥{{ currentUser?.balance.toLocaleString() }}</text>
+      </view>
+      <button class="bb-btn" @click="openWithdraw">合规提现</button>
+    </view>
+    <view class="measure-tip">
+      <text class="mt-lbl">本月量房 {{ currentUser?.monthlyMeasureCount || 0 }} 次</text>
+      <text class="mt-hint">满 {{ REWARDS.PERF_MEASURE_THRESHOLD }} 次得 ¥{{ REWARDS.PERF_BONUS }} 业绩奖</text>
+    </view>
+
+    <!-- 菜单组一：核心资产 -->
+    <view class="menu-group">
+      <view class="menu-row" @click="openWithdraw">
+        <view class="mr-icon ic-red">¥</view>
+        <text class="mr-txt">我的账户</text>
+        <text class="mr-arrow">›</text>
+      </view>
+      <view class="menu-row" @click="goTransactions">
+        <view class="mr-icon ic-purple">📈</view>
+        <text class="mr-txt">我的收入</text>
+        <text class="mr-arrow">›</text>
+      </view>
+      <view class="menu-row" v-if="currentUser?.role === 'V3'" @click="goSeniorIncome">
+        <view class="mr-icon ic-gold">👑</view>
+        <text class="mr-txt">渠道收益</text>
+        <text class="mr-arrow">›</text>
+      </view>
+      <view class="menu-row" @click="goWorkbench">
+        <view class="mr-icon ic-teal">📋</view>
+        <text class="mr-txt">我的客户</text>
+        <text class="mr-arrow">›</text>
       </view>
     </view>
 
-    <!-- 高级经纪人渠道收益 -->
-    <view class="senior-card" v-if="currentUser?.role === 'V3'">
-      <view class="sc-header">
-        <text class="sc-title">👑 高级经纪人渠道收益</text>
-        <text class="sc-tag">本月</text>
+    <!-- 菜单组二：团队与服务 -->
+    <view class="menu-group">
+      <view class="menu-row" @click="goTeam">
+        <view class="mr-icon ic-blue">👥</view>
+        <text class="mr-txt">我的团队</text>
+        <text class="mr-arrow">›</text>
       </view>
-      <view class="sc-row">
-        <text class="sc-lbl">渠道返佣（直属签约 3‰）</text>
-        <text class="sc-val">¥{{ (currentUser.channelOverrideMonth || 0).toLocaleString() }}<text class="sc-cap"> / 3万封顶</text></text>
+      <view class="menu-row" @click="goMarketing">
+        <view class="mr-icon ic-green">🔗</view>
+        <text class="mr-txt">我要推广</text>
+        <text class="mr-arrow">›</text>
       </view>
-      <view class="sc-bar"><view class="sc-bar-fill" :style="{ width: channelPct + '%' }"></view></view>
-      <view class="sc-divider"></view>
-      <view class="sc-row">
-        <text class="sc-lbl">已开发经纪人</text>
-        <text class="sc-val">{{ developedAgents }} 人</text>
+      <view class="menu-row" @click="comingSoon">
+        <view class="mr-icon ic-cyan">🏦</view>
+        <text class="mr-txt">灵活用工收款账户</text>
+        <text class="mr-arrow">›</text>
       </view>
-      <view class="sc-row" style="margin-top: 10px;">
-        <text class="sc-lbl">管理分润 / 里程碑奖</text>
-        <text class="sc-val">¥{{ seniorTeamIncome.toLocaleString() }}</text>
+      <view class="menu-row" @click="comingSoon">
+        <view class="mr-icon ic-slate">🛡️</view>
+        <text class="mr-txt">安全中心</text>
+        <text class="mr-arrow">›</text>
+      </view>
+      <view class="menu-row" @click="comingSoon">
+        <view class="mr-icon ic-indigo">💬</view>
+        <text class="mr-txt">意见反馈</text>
+        <text class="mr-arrow">›</text>
+      </view>
+      <view class="menu-row" @click="comingSoon">
+        <view class="mr-icon ic-cyan">📞</view>
+        <text class="mr-txt">联系客服</text>
+        <text class="mr-arrow">›</text>
       </view>
     </view>
 
-    <view class="menu-list">
-      <view class="menu-item card" @click="goTransactions">
-        <text class="m-icon">🧾</text>
-        <text class="m-txt">资产流水明细</text>
-        <text class="m-arrow">→</text>
-      </view>
-      <view class="menu-item card">
-        <text class="m-icon">🏦</text>
-        <text class="m-txt">灵活用工收款账户</text>
-        <text class="m-arrow">→</text>
-      </view>
-      <view class="menu-item card">
-        <text class="m-icon">📞</text>
-        <text class="m-txt">联系合伙人</text>
-        <text class="m-arrow">→</text>
-      </view>
-    </view>
-    
     <view class="logout-wrap">
       <button class="logout-btn" @click="handleLogout">退出登录 / 切换账号</button>
     </view>
@@ -84,21 +102,25 @@
             <input type="number" class="f-input" v-model.number="withdrawAmount" placeholder="请输入提现金额" />
           </view>
 
-          <view class="tax-calc-box" v-if="withdrawAmount > 0">
+          <view class="tax-calc-box" v-if="typeof withdrawAmount === 'number' && withdrawAmount > 0">
             <view class="tc-row">
               <text class="tc-lbl">申请提现总额</text>
               <text class="tc-val">¥{{ withdrawAmount.toLocaleString() }}</text>
             </view>
             <view class="tc-row tax-row">
+              <text class="tc-lbl">提现手续费 (8% + 3元/笔)</text>
+              <text class="tc-val">- ¥{{ feeAmount.toFixed(2) }}</text>
+            </view>
+            <view class="tc-row tax-row">
               <text class="tc-lbl">个税代扣代缴 (6%)</text>
-              <text class="tc-val">- ¥{{ (withdrawAmount * 0.06).toLocaleString() }}</text>
+              <text class="tc-val">- ¥{{ taxAmount.toFixed(2) }}</text>
             </view>
             <view class="tc-divider"></view>
             <view class="tc-row final-row">
               <text class="tc-lbl">实际到账金额</text>
-              <text class="tc-val-big">¥{{ (withdrawAmount * 0.94).toLocaleString() }}</text>
+              <text class="tc-val-big">¥{{ actualAmount.toFixed(2) }}</text>
             </view>
-            <text class="tax-note">由云账户灵活用工平台依法代扣代缴个人所得税，资金直达个人微信零钱，安全合规。</text>
+            <text class="tax-note">提现规则：单笔需满 100 元整数，单日最多 3 笔且累计不超过 1 万元。资金于发起申请后 24 小时内结算至绑定结算卡；如遇系统繁忙等情况延迟到账，详情请留意系统通知。</text>
           </view>
         </view>
         
@@ -117,88 +139,96 @@ import { store, ROLE_NAMES, REWARDS } from '../../store/mockData';
 const currentUser = computed(() => store.currentUser);
 const roleNames: Record<string, string> = ROLE_NAMES;
 
-// 高级经纪人渠道收益
-const developedAgents = computed(() => store.developedAgentsCount(currentUser.value?.id));
-const channelPct = computed(() => Math.min(100, Math.round((currentUser.value?.channelOverrideMonth || 0) / REWARDS.CHANNEL_CAP * 100)));
-const seniorTeamIncome = computed(() => {
-  const types = ['MGMT_SHARE', 'CHANNEL_OVERRIDE', 'CHANNEL_MGMT_AWARD', 'ASSIST_AWARD'];
-  return store.transactions
-    .filter(t => t.userId === currentUser.value?.id && types.includes(t.type))
-    .reduce((s, t) => s + t.amount, 0);
-});
-
 const showWithdraw = ref(false);
 const withdrawAmount = ref<number | ''>('');
 
+// 费用明细：手续费 8%+3元/笔，个税 6%，二者叠加
+const feeAmount = computed(() => typeof withdrawAmount.value === 'number' ? withdrawAmount.value * 0.08 + 3 : 0);
+const taxAmount = computed(() => typeof withdrawAmount.value === 'number' ? withdrawAmount.value * 0.06 : 0);
+const actualAmount = computed(() => typeof withdrawAmount.value === 'number' ? withdrawAmount.value - feeAmount.value - taxAmount.value : 0);
+
 const canWithdraw = computed(() => {
-  if (typeof withdrawAmount.value !== 'number' || withdrawAmount.value <= 0) return false;
-  return withdrawAmount.value <= (currentUser.value?.balance || 0);
+  const v = withdrawAmount.value;
+  if (typeof v !== 'number' || !Number.isInteger(v) || v < 100) return false;
+  return v <= (currentUser.value?.balance || 0);
 });
 
 const openWithdraw = () => {
-  if((currentUser.value?.balance || 0) <= 0) {
-    uni.showToast({ title: '余额不足', icon: 'none' });
+  if((currentUser.value?.balance || 0) < 100) {
+    uni.showToast({ title: '可提现余额需满 100 元', icon: 'none' });
     return;
   }
-  withdrawAmount.value = currentUser.value?.balance;
+  // 默认预填为不超过余额的整数额度
+  withdrawAmount.value = Math.floor(currentUser.value?.balance || 0);
   showWithdraw.value = true;
 };
 
 const submitWithdraw = () => {
-  if(!canWithdraw.value || typeof withdrawAmount.value !== 'number') return;
-  store.withdraw(withdrawAmount.value);
-  showWithdraw.value = false;
-  uni.showToast({ title: '提现申请已提交', icon: 'success' });
+  if(typeof withdrawAmount.value !== 'number') return;
+  const res = store.withdraw(withdrawAmount.value);
+  if (res.ok) {
+    showWithdraw.value = false;
+    uni.showToast({ title: res.msg, icon: 'none', duration: 2800 });
+  } else {
+    uni.showToast({ title: res.msg, icon: 'none', duration: 2800 });
+  }
 };
 
 const goTransactions = () => { uni.navigateTo({ url: '/pages/transactions/transactions' }); };
+const goSeniorIncome = () => { uni.navigateTo({ url: '/pages/senior-income/senior-income' }); };
+const goWorkbench = () => { uni.switchTab({ url: '/pages/index/index' }); };
+const goTeam = () => { uni.switchTab({ url: '/pages/team/team' }); };
+const goMarketing = () => { uni.switchTab({ url: '/pages/marketing/marketing' }); };
+const comingSoon = () => { uni.showToast({ title: '功能开发中，敬请期待', icon: 'none' }); };
 const handleLogout = () => { uni.reLaunch({ url: '/pages/login/login' }); };
 </script>
 
 <style>
 .container { min-height: 100vh; background: #f8f9fc; padding-bottom: 20px;}
-.header-section { position: relative; padding-bottom: 20px; }
-.bg { position: absolute; top: 0; left: 0; right: 0; height: 160px; background: linear-gradient(135deg, #4a148c, #7e57c2); z-index: 0; border-radius: 0 0 20px 20px; }
 
-.content { position: relative; z-index: 1; padding: 30px 24px; display: flex; align-items: center; }
-.avatar { font-size: 36px; margin-right: 16px; background: rgba(255,255,255,0.15); width: 64px; height: 64px; border-radius: 32px; display: flex; justify-content: center; align-items: center; border: 2px solid rgba(255,255,255,0.4); backdrop-filter: blur(10px);}
-.info { display: flex; flex-direction: column; color: white; }
-.name { font-size: 24px; font-weight: bold; margin-bottom: 4px; }
-.uid { font-size: 12px; opacity: 0.9; }
+/* 顶部资料区 */
+.profile-bar { background: linear-gradient(135deg, #4a148c, #7e57c2); padding: 28px 20px 24px; display: flex; align-items: center; }
+.pb-avatar { font-size: 30px; width: 56px; height: 56px; border-radius: 28px; background: rgba(255,255,255,0.18); display: flex; justify-content: center; align-items: center; border: 2px solid rgba(255,255,255,0.4); margin-right: 14px; }
+.pb-info { flex: 1; display: flex; flex-direction: column; color: white; }
+.pb-name { font-size: 20px; font-weight: bold; margin-bottom: 6px; }
+.pb-meta { display: flex; align-items: center; gap: 8px; }
+.pb-role { font-size: 11px; background: rgba(212,175,55,0.95); color: #4a148c; font-weight: bold; padding: 2px 8px; border-radius: 8px; }
+.pb-id { font-size: 12px; opacity: 0.85; }
+.pb-qr { font-size: 26px; color: rgba(255,255,255,0.9); }
 
-.wallet-card { position: relative; z-index: 2; margin: 0 20px; background: linear-gradient(135deg, #1f2937, #111827); border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
-.w-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 16px; }
-.w-lbl { color: #9ca3af; font-size: 13px; display: block; margin-bottom: 8px; }
-.w-val { color: #d4af37; font-size: 32px; font-weight: bold; font-family: 'DIN Alternate', sans-serif;}
-.withdraw-btn { margin: 0; padding: 0 20px; height: 36px; line-height: 36px; font-size: 14px; border-radius: 18px; background: linear-gradient(90deg, #d4af37, #fde047); color: #4a148c; font-weight: bold; border: none;}
+/* 余额条 */
+.balance-bar { margin: -12px 20px 0; background: #ffffff; border-radius: 16px; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 6px 20px rgba(74,20,140,0.10); position: relative; z-index: 2; }
+.bb-left { display: flex; flex-direction: column; }
+.bb-lbl { font-size: 12px; color: #9ca3af; margin-bottom: 4px; }
+.bb-val { font-size: 28px; font-weight: bold; color: #4a148c; font-family: 'DIN Alternate', sans-serif; }
+.bb-btn { margin: 0; padding: 0 20px; height: 36px; line-height: 36px; font-size: 14px; border-radius: 18px; background: linear-gradient(90deg, #d4af37, #fde047); color: #4a148c; font-weight: bold; border: none; }
+.bb-btn::after { border: none; }
 
-.w-bot { display: flex; align-items: center; flex-wrap: wrap; }
-.pending-lbl { color: #9ca3af; font-size: 12px; }
-.pending-val { color: #d4af37; font-size: 16px; font-weight: 600; font-family: 'DIN Alternate', sans-serif; margin-right: 6px;}
-.pending-hint { color: #6b7280; font-size: 11px; }
+.measure-tip { margin: 10px 20px 0; display: flex; align-items: center; gap: 8px; }
+.mt-lbl { font-size: 12px; color: #6b7280; font-weight: 600; }
+.mt-hint { font-size: 11px; color: #9ca3af; }
 
-/* 高级经纪人渠道收益卡 */
-.senior-card { margin: 0 20px 20px; background: linear-gradient(135deg, #fffbeb, #fef3c7); border-radius: 16px; padding: 20px; border: 1px solid #fde68a; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.05); }
-.sc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.sc-title { font-size: 16px; font-weight: bold; color: #92400e; }
-.sc-tag { font-size: 10px; background: #f59e0b; color: white; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
-.sc-row { display: flex; justify-content: space-between; align-items: center; }
-.sc-lbl { font-size: 13px; color: #b45309; }
-.sc-val { font-size: 16px; font-weight: 800; color: #b45309; font-family: 'DIN Alternate', sans-serif; }
-.sc-cap { font-size: 11px; font-weight: normal; color: #d97706; }
-.sc-bar { height: 8px; background: #fde68a; border-radius: 4px; margin-top: 8px; overflow: hidden; }
-.sc-bar-fill { height: 100%; background: linear-gradient(90deg, #f59e0b, #d97706); border-radius: 4px; transition: width 0.4s; }
-.sc-divider { height: 1px; background: #fde68a; margin: 16px 0; }
+/* 圆形图标菜单组 */
+.menu-group { margin: 18px 20px 0; background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); overflow: hidden; }
+.menu-row { display: flex; align-items: center; padding: 14px 16px; border-bottom: 1px solid #f3f4f6; }
+.menu-row:last-child { border-bottom: none; }
+.menu-row:active { background: #f9fafb; }
+.mr-icon { width: 36px; height: 36px; border-radius: 18px; display: flex; justify-content: center; align-items: center; font-size: 18px; color: white; margin-right: 14px; flex-shrink: 0; }
+.mr-txt { flex: 1; font-size: 15px; color: #1f2937; }
+.mr-arrow { color: #d1d5db; font-size: 20px; }
+.ic-red { background: #f87171; }
+.ic-purple { background: #7e57c2; }
+.ic-gold { background: #d4af37; }
+.ic-teal { background: #14b8a6; }
+.ic-blue { background: #3b82f6; }
+.ic-green { background: #22c55e; }
+.ic-cyan { background: #06b6d4; }
+.ic-slate { background: #64748b; }
+.ic-indigo { background: #6366f1; }
 
-.menu-list { padding: 0 20px 20px; }
 .card { background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-.menu-item { display: flex; align-items: center; padding: 20px; margin-bottom: 12px; }
-.menu-item:active { background: #f3f4f6; }
-.m-icon { font-size: 24px; margin-right: 16px; }
-.m-txt { flex: 1; font-size: 15px; color: #1f2937; font-weight: bold; }
-.m-arrow { color: #d1d5db; font-size: 20px; font-weight: bold; }
 
-.logout-wrap { padding: 0 20px; }
+.logout-wrap { padding: 20px; }
 .logout-btn { background: white; color: #ef4444; border: none; font-size: 15px; font-weight: bold; padding: 12px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
 .logout-btn::after { border: none; }
 

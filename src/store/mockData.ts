@@ -29,6 +29,9 @@ export interface User {
   monthlyMeasureCount: number;  // 本月量房次数（满 5 次发业绩奖）
   perfBonusGranted: boolean;    // 本月业绩奖是否已发（去重）
   channelOverrideMonth: number; // 本月已计提渠道返佣（用于 3 万封顶）
+  withdrawCountToday: number;   // 当日已提现笔数（单日 ≤ 3 笔）
+  withdrawAmountToday: number;  // 当日已提现金额（单日 ≤ 1 万）
+  lastWithdrawDate: string;     // 上次提现日期 YYYY-MM-DD（跨日重置计数）
 }
 
 export interface Lead {
@@ -112,6 +115,7 @@ function newUser(u: Partial<User> & { id: string; name: string; role: UserRole; 
   return {
     balance: 0, pendingBalance: 0,
     monthlyMeasureCount: 0, perfBonusGranted: false, channelOverrideMonth: 0,
+    withdrawCountToday: 0, withdrawAmountToday: 0, lastWithdrawDate: '',
     ...u,
   } as User;
 }
@@ -180,6 +184,21 @@ export const store = reactive({
     return downlines;
   },
 
+  // 仅「直接推广」的下级（直属一代），名单与「推广部」人数均基于此口径
+  getDirectDownlines(userId: string) {
+    return this.users
+      .filter(u => u.parentId === userId)
+      .map(child => {
+        const childLeads = this.leads.filter(l => l.referrerId === child.id);
+        return {
+          user: child,
+          distance: 1,
+          leadsCount: childLeads.length,         // 直客线索总数
+          daysSinceLastLead: childLeads.length ? 3 : 35, // 流失风险启发式
+        };
+      });
+  },
+
   getTeamStats(userId: string) {
     const downlines = this.getDownlines(userId);
     const downlineIds = downlines.map(d => d.user.id);
@@ -189,7 +208,9 @@ export const store = reactive({
     const teamMgmtTotal = this.transactions
       .filter(t => t.userId === userId && teamTypes.includes(t.type))
       .reduce((sum, t) => sum + t.amount, 0);
-    return { teamSize: downlines.length, teamLeadsCount, teamMgmtTotal };
+    // 「推广部」人数只统计直接推广的下级（间接开发不计入）
+    const directSize = this.users.filter(u => u.parentId === userId).length;
+    return { teamSize: directSize, teamLeadsCount, teamMgmtTotal };
   },
 
   getLeaderboard(userId: string) {
@@ -382,14 +403,38 @@ export const store = reactive({
     }
   },
 
-  withdraw(amount: number) {
-    if (this.currentUser.balance >= amount) {
-      const tax = amount * 0.06; // 6% 灵活用工个税代扣
-      const actual = amount - tax;
-      this.currentUser.balance -= amount;
-      this.pushTx(this.currentUser.id, -amount, 'WITHDRAW',
-        `提现 ¥${amount.toLocaleString()}，实际到账 ¥${actual.toLocaleString()}（云账户已依法代扣个税 ¥${tax.toLocaleString()}）`);
+  // 合规提现：手续费 8%+3元/笔 与 个税 6% 叠加；单笔满 100 整数，单日 ≤3 笔且 ≤1 万
+  withdraw(amount: number): { ok: boolean; msg: string } {
+    const user = this.currentUser;
+    if (!Number.isInteger(amount) || amount < 100) {
+      return { ok: false, msg: '单笔提现需为满 100 元的整数' };
     }
+    if (amount > user.balance) {
+      return { ok: false, msg: '可提现余额不足' };
+    }
+    // 跨日重置当日计数
+    const today = new Date().toISOString().slice(0, 10);
+    if (user.lastWithdrawDate !== today) {
+      user.lastWithdrawDate = today;
+      user.withdrawCountToday = 0;
+      user.withdrawAmountToday = 0;
+    }
+    if (user.withdrawCountToday >= 3) {
+      return { ok: false, msg: '今日提现已达 3 笔上限，请明日再试' };
+    }
+    if (user.withdrawAmountToday + amount > 10000) {
+      const left = 10000 - user.withdrawAmountToday;
+      return { ok: false, msg: `超出当日额度（每日最高 1 万元，今日剩余可提 ¥${left.toLocaleString()}）` };
+    }
+    const fee = amount * 0.08 + 3;       // 手续费 8% + 3 元/笔
+    const tax = amount * 0.06;           // 个税代扣代缴 6%
+    const actual = amount - fee - tax;   // 实际到账
+    user.balance -= amount;
+    user.withdrawCountToday += 1;
+    user.withdrawAmountToday += amount;
+    this.pushTx(user.id, -amount, 'WITHDRAW',
+      `提现 ¥${amount.toLocaleString()}，实际到账 ¥${actual.toFixed(2)}（手续费 ¥${fee.toFixed(2)} + 个税 ¥${tax.toFixed(2)}，预计 24h 内到账绑定结算卡）`);
+    return { ok: true, msg: `提现申请已提交，实际到账 ¥${actual.toFixed(2)}，预计 24 小时内到账` };
   },
 
   // 取出并清空一次性提示
